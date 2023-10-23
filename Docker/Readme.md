@@ -7,8 +7,9 @@ Use como base a [documentacao do Docker](https://docs.docker.com/)
 - [Como Persistir dados no Host utilizando Bind Mounts](#como-persistir-dados-no-host-utilizando-bind-mounts)
 - [Comunicação através da Rede](#comunicação-através-da-rede)
 - [Exemplo Prático de Comunicação através da Rede](#exemplo-prático-de-comunicação-através-da-rede)
+- [Exemplo Prático usando Docker Compose](#exemplo-prático-usando-docker-compose)
 
-#### Comandos Importantes do Docker
+### Comandos Importantes do Docker
 
 ```bash
   # Listar containers em execucao
@@ -48,7 +49,7 @@ Use como base a [documentacao do Docker](https://docs.docker.com/)
   docker rmi $(docker image ls -aq) --force
 ```
 
-#### Como Gerar e Executar um Container com Base em um arquivo Dockerfile
+### Como Gerar e Executar um Container com Base em um arquivo Dockerfile
 
 ```bash
   # Gerar a imagem
@@ -70,7 +71,9 @@ Use como base a [documentacao do Docker](https://docs.docker.com/)
   docker tag pedropadilhaportella/app-node:1.0 aluradocker/app-node:1.0
 ```
 
-#### Como Persistir dados no Host utilizando Bind Mounts
+![Docker Hub Images](/assets/docker-hub.png "Docker Hub images")
+
+### Como Persistir dados no Host utilizando Bind Mounts
 
 Nos comandos a seguir, temos um exemplo de como usar Bind Mounts para persistir dados no Host
 a partir de um diretório específico.
@@ -112,7 +115,7 @@ a partir de tmpf, com dados em memória.
   docker run -it --tmpf=/app ubuntu bash
 ```
 
-#### Comunicação através da Rede
+### Comunicação através da Rede
 
 A rede de contêineres refere-se à capacidade dos contêineres se conectarem e 
 se comunicarem entre si ou com cargas de trabalho não Docker.
@@ -172,7 +175,7 @@ sem isolamento entre a interface do container e do host, no caso, a minha máqui
   docker run -d --name local --network host ubuntu sleep 1d
 ```
 
-#### Exemplo Prático de Comunicação através da Rede
+### Exemplo Prático de Comunicação através da Rede
 
 Nesse exemplo, vamos conectar uma aplicação chamada AluraBooks ao MongoD pelo Docker usando containers e redes.
 Primeiramente, vamos baixar as duas imagens nas vesões especificadas, depois vamos executar os dois containers, 
@@ -185,4 +188,22 @@ Para o container aluraBooks, vamos mapear a porta 3000. E assim podemos acessar 
 
   docker run -d --network alura-bridge --name meu-mongo mongo:4.4.6
   docker run -d --network alura-bridge --name alurabooks -p 3000:3000 aluradocker/alura-books:1.0
+```
+
+### Exemplo Prático usando Docker Compose
+
+Compose é uma ferramenta para definir e executar aplicativos Docker com vários contêineres. Com o Compose, você usa um arquivo YAML para configurar os serviços do seu aplicativo. Então, com um único comando, você cria e inicia todos os serviços da sua configuração.
+
+Nesse exemplo, vamos refazer o exemplo anterior, porém registrando todo o passo a passo em um arquivo docker-compose que pode ser encontrado na raiz desse projeto.
+E assim podemos acessar em http://localhost:3000.
+
+```bash 
+  # Subir os containers de acordo com o que foi configurado no docker compose
+  docker compose up
+
+  # Listar containers em execução pelo docker compose
+  docker compose ps
+  
+  # Remover todos os containers, redes e demais configurados pelo docker compose
+  docker compose down
 ```
