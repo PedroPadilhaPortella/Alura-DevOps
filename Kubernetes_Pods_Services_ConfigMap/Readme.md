@@ -327,7 +327,7 @@ data:
 
 E assim podemos acessar o Sistema de Cadastro de Notícias em `http://localhost:30006/`, fazer login com usuário e senha admin e cadastrar notícias.
 
-![Sistema Noticias](./assets/sistema-noticias.png "Sistema Noticias")
+![Sistema Noticias](./assets/sistema-noticias.png "Sistema Noticias"){ style="display: block; margin: 0 auto" }
 
 Agora precisamos configurar os Pods do Portal de Notícias para poder acessar o Sistema de Notícias para apresentar as notícias cadastradas, para isso, precisamos configurar uma variável de ambiente do IP do Sistema, então novamente vamos criar um ConfigMap para isso e aplicar com o comando `kubectl apply -f noticias/portal-configmap.yaml` e referenciar esse ConfigMap no `env` do `portal-noticias.yaml`, depois deletar o Pod `portal-noticias` e recriar com o comando `kubectl apply -f noticias/portal-noticias.yaml`.
 
@@ -342,4 +342,4 @@ data:
 ```
 E assim podemos acessar o Portal Notícias em `http://localhost:30005/`, e ver as notícias criadas no portal.
 
-![Portal Noticias](./assets/portal-noticias.png "Portal Noticias")
+![Portal Noticias](./assets/portal-noticias.png "Portal Noticias"){ style="display: block; margin: 0 auto" }
