@@ -1,5 +1,7 @@
 # Kubernetes: Pods, Services e ConfigMaps
 
+![Kubernetes: Pods, Services e ConfigMaps](./assets/kubernetes.png)
+
 -   [Iniciando com Kubernetes](#iniciando-com-kubernetes)
 -   [Entendendo os Pods](#entendendo-os-pods)
 -   [Expondo Pods com Services](#expondo-pods-com-services)
@@ -204,6 +206,8 @@ spec:
 
 ### Projeto Portal de Notícias
 
+![Projeto Portal de Notícias](./assets/projeto-noticias.png)
+
 Primeramente, vamos configurar o Portal de Notícias.
 
 Crie um Pod chamado `portal-noticias` que contenha a imagem `aluracursos/portal-noticias:1` e esteja exposto na porta 80, e uma NodePort chamado `svc-portal-noticias`, fazendo o mapeamento para a porta 80/3005. Ao final, você deve conseguir acessar a aplicação em http://localhost:30005.
@@ -327,7 +331,7 @@ data:
 
 E assim podemos acessar o Sistema de Cadastro de Notícias em `http://localhost:30006/`, fazer login com usuário e senha admin e cadastrar notícias.
 
-![Sistema Noticias](./assets/sistema-noticias.png "Sistema Noticias"){ style="display: block; margin: 0 auto" }
+![Sistema Noticias](./assets/sistema-noticias.png)
 
 Agora precisamos configurar os Pods do Portal de Notícias para poder acessar o Sistema de Notícias para apresentar as notícias cadastradas, para isso, precisamos configurar uma variável de ambiente do IP do Sistema, então novamente vamos criar um ConfigMap para isso e aplicar com o comando `kubectl apply -f noticias/portal-configmap.yaml` e referenciar esse ConfigMap no `env` do `portal-noticias.yaml`, depois deletar o Pod `portal-noticias` e recriar com o comando `kubectl apply -f noticias/portal-noticias.yaml`.
 
@@ -342,4 +346,4 @@ data:
 ```
 E assim podemos acessar o Portal Notícias em `http://localhost:30005/`, e ver as notícias criadas no portal.
 
-![Portal Noticias](./assets/portal-noticias.png "Portal Noticias"){ style="display: block; margin: 0 auto" }
+![Portal Noticias](./assets/portal-noticias.png)
