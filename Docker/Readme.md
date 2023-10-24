@@ -71,7 +71,7 @@ Use como base a [documentacao do Docker](https://docs.docker.com/)
   docker tag pedropadilhaportella/app-node:1.0 aluradocker/app-node:1.0
 ```
 
-![Docker Hub Images](/assets/docker-hub.png "Docker Hub images")
+![Docker Hub Images](./assets/docker-hub.png "Docker Hub images")
 
 ### Como Persistir dados no Host utilizando Bind Mounts
 

@@ -7,6 +7,7 @@
     -   [NodePort](#nodeport)
     -   [LoadBalance](#loadbalance)
 -   [Projeto Portal de Notícias](#projeto-portal-de-notícias)
+    -   [ConfigMaps](#configmaps)
 
 ### Iniciando com Kubernetes
 
@@ -47,11 +48,11 @@ Vamos criar um exemplo chamado primeiro-pod.yaml, e nele vamos adicionar as mesm
 apiVersion: v1
 kind: Pod
 metadata:
-    name: primeiro-pod
+  name: primeiro-pod
 spec:
-    containers:
-        - name: nginx-container
-          image: nginx:latest
+  containers:
+    - name: nginx-container
+      image: nginx:latest
 ```
 
 E em seguida aplicar a criação do Pod com o comando `kubectl apply -f primeiro-pod.yaml`:
@@ -78,53 +79,50 @@ Para esse exemplo, vamos criar 2 Pods, o pod-1 e o pod-2. Em seguida, vamos cria
 Um serviço do tipo `ClusterIP` serve para fazer a comunicação entre diferentes pods dentro de um mesmo cluster.
 
 ##### pod-1.yaml
-
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-    name: pod-1
-    labels:
-        app: primeiro-pod
+  name: pod-1
+  labels:
+    app: primeiro-pod
 spec:
-    containers:
-        - name: container-pod-1
-          image: nginx:latest
-          ports:
-              - containerPort: 80
+  containers:
+    - name: container-pod-1
+      image: nginx:latest
+      ports:
+        - containerPort: 80
 ```
 
 ##### pod-2.yaml
-
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-    name: pod-2
-    labels:
-        app: segundo-pod
+  name: pod-2
+  labels:
+    app: segundo-pod
 spec:
-    containers:
-        - name: container-pod-2
-          image: nginx:latest
-          ports:
-              - containerPort: 80
+  containers:
+    - name: container-pod-2
+      image: nginx:latest
+      ports:
+        - containerPort: 80
 ```
 
 ##### svc-pod-2.yaml
-
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-    name: svc-pod-2
+  name: svc-pod-2
 spec:
-    type: ClusterIP
-    selector:
-        app: segundo-pod
-    ports:
-        - port: 80
-          targetPort: 80
+  type: ClusterIP
+  selector:
+    app: segundo-pod
+  ports:
+    - port: 80
+      targetPort: 80
 ```
 
 E vamos criar esses Pods e o Service:
@@ -156,20 +154,19 @@ Se deletarmos o Pod-2 e tentarmos fazer o curl novamente, teremos um erro, porqu
 Agora vamos criar um outro tipo de Service chamado `NodePort`, que nada mais é do que um tipo de serviço que permitem a comunicação com o mundo externo. Em seguida, executar `kubectl apply -f svc-pod-1.yaml` para criá-lo.
 
 ##### svc-pod-1.yaml
-
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-    name: svc-pod-1
+  name: svc-pod-1
 spec:
-    type: NodePort
-    selector:
-        app: primeiro-pod
-    ports:
-        - port: 80
-          targetPort: 80
-          nodePort: 30003
+  type: NodePort
+  selector:
+    app: primeiro-pod
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30003
 ```
 
 Podemos acessar da mesma forma que o ClusterIP, por meio do IP da NodePort svc-pod-1, na porta 80.
@@ -189,42 +186,160 @@ E podemos acessar externamente pela url http://localhost:30003, que é a mesma p
 Um LoadBalancer nada mais é do que um Service que permite a comunicação entre uma máquina do mundo externo e os nosso pods. Só que ele automaticamente se integra ao LoadBalancer do nosso cloud provider. Então quando nós criamos um LoadBalancer ele vai utilizar automaticamente, sem nenhum esforço manual, o cloud provider da AWS ou do Google Cloud Platform ou da Azure, e assim por diante. Portanto, um Load Balancer é um NodePort e ClusterIP ao mesmo tempo.
 
 ##### svc-pod-1-load-balancer.yaml
-
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-    name: svc-pod-1-load-balancer
-    labels:
-        app: portal-noticias
+  name: svc-pod-1-load-balancer
+  labels:
+    app: portal-noticias
 spec:
-    type: LoadBalancer
-    selector:
-        app: primeiro-pod
-    ports:
-        - containerPort: 80
-          nodePort: 30004
+  type: LoadBalancer
+  selector:
+      app: primeiro-pod
+  ports:
+    - containerPort: 80
+      nodePort: 30004
 ```
 
 ### Projeto Portal de Notícias
 
-Primeramente, vamos configurar o Portal de Notícias. Crie um Pod chamado `portal-noticias` que contenha a imagem `aluracursos/portal-noticias:1` e esteja exposto na porta 80, e uma NodePort chamado `svc-portal-noticias`, fazendo o mapeamento para a porta 80/3005. Ao final, você deve conseguir acessar a aplicação em http://localhost:30005.
+Primeramente, vamos configurar o Portal de Notícias.
+
+Crie um Pod chamado `portal-noticias` que contenha a imagem `aluracursos/portal-noticias:1` e esteja exposto na porta 80, e uma NodePort chamado `svc-portal-noticias`, fazendo o mapeamento para a porta 80/3005. Ao final, você deve conseguir acessar a aplicação em http://localhost:30005.
 
 ```bash
   kubectl apply -f noticias/portal-noticias.yaml
   kubectl apply -f noticias/svc-portal-noticias.yaml
 ```
 
-Em seguida, vamos configurar o Sistema de Cadastro de Notícias. Crie mais um Pod chamado `sistema-noticias` que contenha a imagem `aluracursos/sistema-noticias:1` e esteja exposto na porta 80, e uma NodePort chamado `svc-sistema-noticias`, fazendo o mapeamento para a porta 80/3006. Ao final, você deve conseguir acessar a aplicação em http://localhost:30006.
+Em seguida, vamos configurar o Sistema de Cadastro de Notícias.
+
+Crie mais um Pod chamado `sistema-noticias` que contenha a imagem `aluracursos/sistema-noticias:1` e esteja exposto na porta 80, e uma NodePort chamado `svc-sistema-noticias`, fazendo o mapeamento para a porta 80/3006. Ao final, você deve conseguir acessar a aplicação em http://localhost:30006.
 
 ```bash
   kubectl apply -f noticias/sistema-noticias.yaml
   kubectl apply -f noticias/svc-sistema-noticias.yaml
 ```
 
-Agora vamos configurar o Banco de dados que vai armazernar nossas noticias. Crie outro Pod chamado `db-noticias` que contenha a imagem `aluracursos/mysql-db:1` e esteja exposto na porta 3306, e como não vamos acessar esse serviço de fora do Cluster, podemos usar um ClusterIP chamado `svc-db-noticias`, também na porta 3306.
+Agora vamos configurar o Banco de dados que vai armazernar nossas noticias.
+
+Crie outro Pod chamado `db-noticias` que contenha a imagem `aluracursos/mysql-db:1` e esteja exposto na porta 3306, e como não vamos acessar esse serviço de fora do Cluster, podemos usar um ClusterIP chamado `svc-db-noticias`, também na porta 3306.
+
+E para o `db-noticias` especificamente, precisamos configurar algumas variáveis de ambiente relacionadas ao acesso ao banco de dados:
+
+```yaml
+spec:
+  containers:
+    env:
+      - name: "MYSQL_ROOT_PASSWORD"
+        value: "q1w2e3r4"
+      - name: "MYSQL_DATABASE"
+        value: "empresa"
+      - name: "MYSQL_PASSWORD"
+        value: "q1w2e3r4"
+```
 
 ```bash
   kubectl apply -f noticias/db-noticias.yaml
   kubectl apply -f noticias/svc-db-noticias.yaml
 ```
+
+Podemos checar se o banco está rodando corretamente acessando ele via terminal, fazendo login no mysql e rodando alguns comando sql pra ver as tabelas e seus dados.
+
+```bash
+  kubectl exec -it db-noticias -- bash
+
+  :/# mysql -u root -p
+  Enter password: 
+
+  mysql> show databases;
+  mysql> use empresa;
+  mysql> show tables;
+  mysql> select * from usuario;
+```
+
+Porém não fica muito correto manter essas variáveis de ambiente acopladas no Pod, então como nós poderíamos separar isso para que apenas a parte de configuração fique no Pod, para deicá-lo o máximo de portável possível, não atrelando ele à nenhuma configuração específica.
+
+#### ConfigMaps
+
+A solução é utilizar ConfigMaps. Ele vai ser responsável por armazenar essas configurações que nós precisamos utilizar dentro de determinados pods, para não acoplarmos o nosso recurso com informações de configuração.
+
+Então vamos remover a seção de `env` do `db-noticias` e criar um `ConfigMap` para isso.
+
+##### db-configmap.yaml
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-configmap
+data:
+  MYSQL_ROOT_PASSWORD: q1w2e3r4
+  MYSQL_DATABASE: empresa
+  MYSQL_PASSWORD: q1w2e3r4
+```
+
+```bash
+  kubectl apply -f noticias/db-configmap.yaml
+
+  # Listar ConfigMaps
+  kubectl get configmaps
+
+  # Mostrar a descrição do ConfigMap
+  kubectl describe configmap db-configmap
+```
+
+E vamos referencias o `env` do `db-noticias` para usar o `ConfigMap` que criamos, remover o Pod antigo, para resetar o banco de dados com `kubectl delete pod db-noticias` e aplicar as alterações com `kubectl apply -f noticias/db-noticias.yaml`
+
+##### db-noticias.yaml
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-noticias
+  labels:
+    app: db-noticias
+spec:
+  containers:
+  - name: db-noticias-container
+    image: aluracursos/mysql-db:1
+    ports:
+      - containerPort: 3306
+    envFrom:
+      - configMapRef:
+          name: db-configmap
+```
+
+O Pod de Sitema também precisa de algumas variáveis de ambiente para configurar o acesso ao banco de dados do lado do servidor, então criaremos um `ConfigMap` chamado `sistema-configmap.yaml`, com as seguintes variáveis, e sem seguida, referenciar esse ConfigMap no `env` do `sistema-noticias.yaml`, assim como fizemos no `db-noticias.yaml`.
+
+##### sistema-configmap.yaml
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sistema-configmap
+data:
+  HOST_DB: svc-db-noticias:3306
+  USER_DB: root
+  PASS_DB: q1w2e3r4
+  DATABASE_DB: empresa
+```
+
+E assim podemos acessar o Sistema de Cadastro de Notícias em `http://localhost:30006/`, fazer login com usuário e senha admin e cadastrar notícias.
+
+![Sistema Noticias](./assets/sistema-noticias.png "Sistema Noticias")
+
+Agora precisamos configurar os Pods do Portal de Notícias para poder acessar o Sistema de Notícias para apresentar as notícias cadastradas, para isso, precisamos configurar uma variável de ambiente do IP do Sistema, então novamente vamos criar um ConfigMap para isso e aplicar com o comando `kubectl apply -f noticias/portal-configmap.yaml` e referenciar esse ConfigMap no `env` do `portal-noticias.yaml`, depois deletar o Pod `portal-noticias` e recriar com o comando `kubectl apply -f noticias/portal-noticias.yaml`.
+
+##### portal-configmap.yaml
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portal-configmap
+data:
+  IP_SISTEMA: http://localhost:30006
+```
+E assim podemos acessar o Portal Notícias em `http://localhost:30005/`, e ver as notícias criadas no portal.
+
+![Portal Noticias](./assets/portal-noticias.png "Portal Noticias")
