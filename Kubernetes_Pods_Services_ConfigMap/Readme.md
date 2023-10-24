@@ -1,6 +1,4 @@
-# Kubernetes: Pods, Services e ConfigMaps
-
-![Kubernetes: Pods, Services e ConfigMaps](./assets/kubernetes.png)
+# :snowflake: Kubernetes: Pods, Services e ConfigMaps
 
 -   [Iniciando com Kubernetes](#iniciando-com-kubernetes)
 -   [Entendendo os Pods](#entendendo-os-pods)

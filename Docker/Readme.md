@@ -1,4 +1,4 @@
-# Docker
+# :whale: Docker
 
 Use como base a [documentacao do Docker](https://docs.docker.com/)
 
