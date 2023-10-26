@@ -8,6 +8,10 @@
     -   [LoadBalance](#loadbalance)
 -   [Projeto Portal de Notícias](#projeto-portal-de-notícias)
     -   [ConfigMaps](#configmaps)
+-   [ReplicaSets](#replicasets)
+-   [Deployment](#deployment)
+-   [Implementando Deployments no Projeto de Notícias](#implementando-deployments-no-projeto-de-notícias)
+-   [Persistindo dados com Volumes](#persistindo-dados-com-volumes)
 
 ### Iniciando com Kubernetes
 
@@ -345,3 +349,241 @@ data:
 E assim podemos acessar o Portal Notícias em `http://localhost:30005/`, e ver as notícias criadas no portal.
 
 ![Portal Noticias](./assets/portal-noticias.png)
+
+### ReplicaSets
+
+Então vamos supor que por algum motivo o Pod `portal-noticias` caia, ou seja deletado com o comando `kubectl delete pod portal-noticias` sem querer, como poderemos garantir que sempre hajam rélicas dele rodando para direcionar o tráfego, e ter um Serviço que possa restaurar esse Pod automaticamente?
+
+Podemos usar um `ReplicaSet`, que nada mais é que um processo que executa várias instâncias de um pod e mantém o número especificado de pods constante. Ele garante que um conjunto estável de pods réplica esteja em execução a qualquer momento, o que garante um número especificado disponível de pods idênticos.
+
+##### portal-noticias-replicaset.yaml
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: portal-noticias-replicaset
+spec:
+  template:
+    metadata:
+      name: portal-noticias
+      labels:
+        app: portal-noticias
+    spec:
+      containers:
+      - name: portal-noticias-container
+        image: aluracursos/portal-noticias:1
+        ports:
+          - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: portal-configmap
+  replicas: 3
+  selector:
+    matchLabels:
+      app: portal-noticias
+```
+Então criando um ReplicaSet e executando `kubectl apply -f noticias/portal-noticias-replicaset.yaml`, agora teremos uma quantidade definida de Pods identicos, e se algum deles falhar, o ReplicaSet automaticamente vai tentar criar um novo, enquanto os outros Replicas recebem as requisições, além de que podemos configurar um `Balanceamento de Carga` entre esses Pods.
+
+```bash
+  # Listando todos os Pods, onde poderemos ver que temos 3 Pods do portal-noticias
+  kubectl get pods
+
+  # Listando todos os ReplicaSets, onde poderemos ver o ReplicaSets que criamos
+  kubectl get rs 
+
+  # Ao deletar um dos Pods do ReplicaSet, autpmaticamente será criado uma nova replica
+  kubectl delete pod portal-noticias-replicaset-fbtlj
+
+NAME                               READY   STATUS    RESTARTS      AGE
+portal-noticias-replicaset-4ck4r   1/1     Running   0             37m
+portal-noticias-replicaset-phbkt   1/1     Running   0             37m
+portal-noticias-replicaset-zg5wc   1/1     Running   0             46s
+db-noticias                        1/1     Running   0             44h
+sistema-noticias                   1/1     Running   0             44h
+```
+
+### Deployment
+
+Deployment nada mais é do que uma camada acima de um ReplicaSet. Então, quando nós definimos um Deployment,
+Então vamos criar um Deployment como no exemplo a seguir e executar com o comando `kubectl apply -f noticias/nginx-deployment.yaml`
+
+##### nginx-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: nginx-pod
+      labels:
+        app: nginx-pod
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:stable
+        ports:
+          - containerPort: 80
+  selector:
+    matchLabels:
+      app: nginx-pod
+```
+
+Dessa forma, se listarmos os Pods, veremos que agora tem mais 3 Pods chamados nginx-deployment, também teremos dois ReplicaSet e um unico Deployment.
+
+```bash
+  # Listando todos os Pods, onde poderemos ver que temos 3 Pods novos nginx-deployment
+  kubectl get pods
+
+  # Listando todos os ReplicaSets, onde poderemos ver os dois ReplicaSets que criamos
+  kubectl get rs 
+
+  # Listando todos os Deployments
+  kubectl get deployments
+
+REVISION  CHANGE-CAUSE
+4         Definindo a imagem do nginx com latest
+5         kubectl.exe apply --filename=noticias/nginx-deployment.yaml --record=true
+```
+
+A vantagem é que usando Deployments, podemos ter um controle de revisões dos nossos Pods, por exemplo, com o comando `kubectl rollout history deployment nginx-deployment`, então, se executarmos qualquer alteração em nosso Deployment e aplicarmos as alterações com a flag `--record`, e então buscarmos o rollout history, teremos as versões salvas do Deployment, inclusive podemos configurar a changeCause, a partir do comando:
+
+`kubectl annotate deployment nginx-deployment kubernetes.io/change-cause="Definindo a imagem do nginx com latest"`
+
+Assim como também podemos voltar para alguma revisão específica, com o comando `kubectl rollout undo deployment nginx-deployment --to-revision=1`, onde os Pods serão deletado, e novos Pods com a revisão especificada serão gerados.
+
+### Implementando Deployments no Projeto de Notícias
+
+Então para melhorar o projeto, vamos implementar Deployments e ReplicaSets nos Pods do nosso sistema, para garantir o máximo de Disponibilidade dos recursos em nossa Aplicação.
+
+![Projeto Portal de Notícias com Deployment](./assets/projeto-noticias-deployment.png)
+
+Primeiro, vamos limpar os Deployment, ReplicaSets e Pods criados anteriormente, vamos remover o ReplicaSet criado anteriormente, depois vamos criar um arquivo para o Deployment do Portal de Noticias e executar com `kubectl apply -f noticias/portal-noticias-deployment.yaml`.
+
+##### portal-noticias-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-noticias-deployment
+spec:
+  template:
+    metadata:
+      name: portal-noticias
+      labels:
+        app: portal-noticias
+    spec:
+      containers:
+      - name: portal-noticias-container
+        image: aluracursos/portal-noticias:1
+        ports:
+          - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: portal-configmap
+  replicas: 3
+  selector:
+    matchLabels:
+      app: portal-noticias
+```
+
+```bash
+  # Gerando uma anotação para essa versao do Deployment
+  kubectl annotate deployment portal-noticias-deployment kubernnetes.io/change-cause="Criando o Deployment do Portal de Noticias v1.0"
+
+  # Listando histórico de Deployments
+  kubectl rollout history deployment portal-noticias-deployment
+  
+REVISION  CHANGE-CAUSE
+1         Criando o Deployment do Portal de Noticias v1.0
+```
+
+E agora faremos o Deployment do nosso Sistema de Noticias:
+
+##### sistema-noticias-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sistema-noticias-deployment
+spec:
+  template:
+    metadata:
+      name: sistema-noticias
+      labels:
+        app: sistema-noticias
+    spec:
+      containers:
+      - name: sistema-noticias-container
+        image: aluracursos/sistema-noticias:1
+        ports:
+          - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: sistema-configmap
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sistema-noticias
+```
+
+```bash
+  # Deletando o Pod antigo
+  kubectl delete pod sistema-noticias
+
+  # Criando o Deployment
+  kubectl apply -f noticias/sistema-noticias-deployment.yaml
+
+  # Configurando a changeCause da versão
+  kubectl annotate deployment sistema-noticias-deployment kubernetes.io/change-cause="Criando o Deployment do Sistema de Noticias v1.0"
+
+  kubectl rollout history deployment sistema-noticias-deployment
+```
+
+E por fim o Deployment do nosso banco de dados:
+
+##### db-noticias-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-noticias-deployment
+spec:
+  template:
+    metadata:
+      name: db-noticias
+      labels:
+        app: db-noticias
+    spec:
+       containers:
+        - name: db-noticias-container
+          image: aluracursos/mysql-db:1
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: db-configmap
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-noticias
+```
+
+```bash
+  # Deletando o Pod antigo
+  kubectl delete pod db-noticias
+
+  # Criando o Deployment
+  kubectl apply -f noticias/db-noticias-deployment.yaml
+
+  # Configurando a changeCause da versão
+  kubectl annotate deployment db-noticias-deployment kubernetes.io/change-cause="Criando o Deployment do Banco de Dados MySql v1.0"
+
+  kubectl rollout history deployment db-noticias-deployment
+```
+
+### Persistindo dados com Volumes
+
+Semelhante aos Volumes do Docker, os volumes do Kubernetes possuem ciclos de vida independente dos containers, porém são dependentes dos Pods.
