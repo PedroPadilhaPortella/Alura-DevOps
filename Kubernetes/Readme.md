@@ -586,4 +586,10 @@ spec:
 
 ### Persistindo dados com Volumes
 
-Semelhante aos Volumes do Docker, os volumes do Kubernetes possuem ciclos de vida independente dos containers, porém são dependentes dos Pods.
+Semelhante aos Volumes do Docker, os volumes do Kubernetes possuem ciclos de vida independente dos containers, porém são dependentes dos Pods. Ou seja, podemos configurar Volumes dentro dos Pods, para que todos os dados sejam armazenados nele, veja o exemplo do `pod-volume.yaml`.
+
+O Kubernetes suporta muitos tipos de volumes. Um Pod é capaz de utilizar qualquer quantidade de tipos de volumes simultaneamente. Os tipos de volume efêmeros têm a mesma vida útil do pod, mas os volumes persistentes existem além da vida útil de um pod. Quando um pod deixa de existir, o Kubernetes destrói volumes efêmeros; no entanto, o Kubernetes não destrói volumes persistentes. Para qualquer tipo de volume em um determinado pod, os dados são preservados entre as reinicializações do contêiner.
+
+Dentre os tipos de Volumes, temos o `PersistentVolume` (PV), que é um tipo de Volume de dados Persistente, ou seja, é um recurso dentro do cluster independente que tem um ciclo de vida independente de qualquer Pod. Além de poder ter uma capacidade de armazenamento estática ou dinâmica.
+
+Se um volume persistente (PV) é o volume "físico" na máquina host que armazena seus dados persistentes. Uma reivindicação de volume persistente (PVC) é uma solicitação para que a plataforma crie um PV para você e você anexe PVs aos seus Pods por meio de um PVC. `Pod -> PVC -> PV -> Host machine`
