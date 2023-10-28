@@ -1,11 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pvc-1
+  name: sessao-pvc
 spec:
   accessModes:
-    - ReadWriteOnde
+  - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: standard
+      storage: 1Gi

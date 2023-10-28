@@ -12,6 +12,11 @@
 -   [Deployment](#deployment)
 -   [Implementando Deployments no Projeto de Notícias](#implementando-deployments-no-projeto-de-notícias)
 -   [Persistindo dados com Volumes](#persistindo-dados-com-volumes)
+-   [Utilizando Storage Classes](#utilizando-storage-classes)
+-   [Probes](#probes)
+    -   [Liveness Probe](#liveness-probe)
+    -   [Readiness Probe](#readiness-probe)
+-   [HorizontalPodAutoscaler](#horizontalPodAutoscaler)
 
 ### Iniciando com Kubernetes
 
@@ -586,10 +591,107 @@ spec:
 
 ### Persistindo dados com Volumes
 
-Semelhante aos Volumes do Docker, os volumes do Kubernetes possuem ciclos de vida independente dos containers, porém são dependentes dos Pods. Ou seja, podemos configurar Volumes dentro dos Pods, para que todos os dados sejam armazenados nele, veja o exemplo do `pod-volume.yaml`.
+Semelhante aos Volumes do Docker, os volumes do Kubernetes possuem ciclos de vida independente dos containers, porém são dependentes dos Pods. Ou seja, podemos configurar Volumes dentro dos Pods, para que todos os dados sejam armazenados nele.
 
 O Kubernetes suporta muitos tipos de volumes. Um Pod é capaz de utilizar qualquer quantidade de tipos de volumes simultaneamente. Os tipos de volume efêmeros têm a mesma vida útil do pod, mas os volumes persistentes existem além da vida útil de um pod. Quando um pod deixa de existir, o Kubernetes destrói volumes efêmeros; no entanto, o Kubernetes não destrói volumes persistentes. Para qualquer tipo de volume em um determinado pod, os dados são preservados entre as reinicializações do contêiner.
 
 Dentre os tipos de Volumes, temos o `PersistentVolume` (PV), que é um tipo de Volume de dados Persistente, ou seja, é um recurso dentro do cluster independente que tem um ciclo de vida independente de qualquer Pod. Além de poder ter uma capacidade de armazenamento estática ou dinâmica.
 
 Se um volume persistente (PV) é o volume "físico" na máquina host que armazena seus dados persistentes. Uma reivindicação de volume persistente (PVC) é uma solicitação para que a plataforma crie um PV para você e você anexe PVs aos seus Pods por meio de um PVC. `Pod -> PVC -> PV -> Host machine`
+
+### Utilizando Storage Classes
+
+Um `StorageClass` fornece uma maneira para descrever as "classes" de armazenamento que oferecem. Classes diferentes podem ser mapeadas para níveis de qualidade de serviço, ou para políticas de backup, ou para políticas arbitrárias determinadas pelos administradores de cluster
+
+### Utilizando StatefulSet
+
+O `StatefulSet` funciona de maneira similar a um Deployment, mas ele é voltado para aplicações que devem manter o seu estado, isso significa que quando um Pod reinicia ou falha por algum motivo dentro de um Stateful Set e volta a execução, os arquivos serão mantidos.
+
+Quando nós criarmos um Pod dentro de um StatefulSet, temos que definir que ele vai ter um Persistent Volume Claim para acessar um Persistent Volume. Sua configuração é bem semelhante ao Deplyment, mas precisa ter um PersistentVolumeClaim, não vamos precisar criar nem o PersistentVolume nem o StorageClass, porque o StatefulSet vai criar automaticamente, sob demanda.
+
+```bash
+  # Criando o StatefulSet
+  kubectl apply -f noticias/sistema-noticias-statefulset.yaml
+
+  # Criando um PersistentVolumeClaim para salvar as imagens
+  kubectl apply -f noticias/imagens-pvc.yaml
+
+  # Criando um PersistentVolumeClaim para salvar as sessão do usuário
+  kubectl apply -f noticias/sessao-pvc.yaml
+```
+
+### Probes
+
+Probes são sondagens de atividade que servem para saber se a aplicação está saudável, detectar um problemas, erros, deadlocks, e saber se deve reiniciar o Pod ou não.
+
+#### Liveness Probe
+
+Configurando um Liveness Probe (Prova de Vida) dos Pods, para que seja feita uma requisição em na aplicação a cada 10 segundos, aceitando até 3 falhas, com um delay inicial de 20 segundos.
+
+```yaml
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 80
+    periodSeconds: 10
+    failureThreshold: 3
+    initialDelaySeconds: 20
+```
+
+#### Readness Probe
+
+Configurando um Readiness Probe dos Pods, para que sejam feitas requisições na aplicação a cada 10 segundos, para checar se o Pod já está ativo e operante para receber requisições.
+
+```yaml
+  readinessProbe:
+    httpGet:
+      path: /inserir_noticias.php
+      port: 80
+    periodSeconds: 10
+    failureThreshold: 5
+    initialDelaySeconds: 3
+```
+
+### HorizontalPodAutoscaler
+
+No Kubernetes, um HorizontalPodAutoscaler tem a capacidade de atualizar automaticamente um recurso de workload (como um StatefulSet), com o objetivo de dimensionar automaticamente a carga de trabalho para atender à demanda.
+
+Se por algum motivo, houve um aumento de carga nos Pods devido a um aumento de requisções, o HorizontalPodAutoscaler vai automaticamente implantar mais Pods para suprir a demanda.
+
+Isso é diferente do escalonamento vertical , que para Kubernetes significaria atribuir mais recursos (por exemplo: memória ou CPU) aos pods que já estão em execução para a carga de trabalho.
+
+Se a carga diminuir e o número de pods estiver acima do mínimo configurado, o HorizontalPodAutoscaler instrui o recurso de carga de trabalho (Deployment, StatefulSet ou outro recurso semelhante) a reduzir a escala verticalmente.
+
+A atuação do HorizontalPodAutoscaler se baseia em métricas como utilização média de CPU, utilização média de memória ou qualquer outra métrica personalizada.
+
+##### portal-noticias-hpa.yaml
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: portal-noticias-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: portal-noticias-deployment
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+Vamos criar um HPA e depois checar se está rodando. Também vamos precisar configurar o campo de resources no nosso Deployment.
+
+```bash
+  # Criando um HorizontalPodAutoscaler
+  kubectl apply -f noticias/portal-noticias-hpa.yaml
+
+  # Listando os HPAs em execução
+  kubectl get hpa
+```
