@@ -1,4 +1,4 @@
-# :snowflake: Kubernetes: Pods, Services e ConfigMaps
+# :snowflake: Kubernetes
 
 -   [Iniciando com Kubernetes](#iniciando-com-kubernetes)
 -   [Entendendo os Pods](#entendendo-os-pods)
