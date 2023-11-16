@@ -1,9 +1,5 @@
 # :hammer_and_wrench: Terraform
 
--   [Iniciando com Terraform](#iniciando-com-terraform)
-
-### Iniciando com Terraform
-
 Terraform é uma ferramenta de `infrastructure as code` que permite construir, alterar e versionar infraestrutura com segurança e eficiência. Isso inclui componentes de baixo nível, como instâncias de computação, armazenamento e rede; e componentes de alto nível, como entradas DNS e recursos SaaS.
 
 ![Terraform](./assets/terraform.png)
