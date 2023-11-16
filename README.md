@@ -6,6 +6,6 @@ Repositório que contém os scripts desenvolvidos nos Cursos de DevOps da Alura.
 
 [:snowflake: Curso de Kubernetes](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Kubernetes#readme)
 
-[:snowflake: Curso de Kubernetes com AKS e ACR](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Kubernetes#readme)
+[:globe_with_meridians: Curso de Kubernetes com AKS e ACR](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Kubernetes#readme)
 
-[:snowflake: Curso de Terraform](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Terraform#readme)
+[:hammer_and_wrench: Curso de Terraform](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Terraform#readme)
