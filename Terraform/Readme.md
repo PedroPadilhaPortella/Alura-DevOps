@@ -4,7 +4,7 @@ Terraform é uma ferramenta de `infrastructure as code` que permite construir, a
 
 ![Terraform](./assets/terraform.png)
 
-Ela é uma ferramenta multiplataforma e open source, pode ser usada para administrar sua infraestrutura independente do seu Cloud Provider, como Azure, AWS, GCP, Digital Ocean, Alibaba Cloud, Oracle Cloud, Helm, entre outros, veja mais em https://registry.terraform.io/browse/providers.
+Ela é uma ferramenta multiplataforma e open source, pode ser usada para administrar sua infraestrutura independente do seu Cloud Provider, como Azure, AWS, GCP, Digital Ocean, Alibaba Cloud, Oracle Cloud, DataDog, Helm, entre outros, veja mais em https://registry.terraform.io/browse/providers.
 
 Você pode baixar o Terraform, e encontrar toda a documentação sobre a ferramenta em https://www.terraform.io.
 
