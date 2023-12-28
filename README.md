@@ -9,3 +9,5 @@ Repositório que contém os scripts desenvolvidos nos Cursos de DevOps da Alura.
 [:globe_with_meridians: Curso de Kubernetes com AKS e ACR](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Kubernetes%20com%20AKS%20e%20ACR#readme)
 
 [:hammer_and_wrench: Curso de Terraform](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Terraform#readme)
+
+[:hammer_and_wrench: Curso de Terraform e Kubernetes](https://github.com/PedroPadilhaPortella/Alura-DevOps/tree/main/Terraform%20e%20Kubernetes#readme)
